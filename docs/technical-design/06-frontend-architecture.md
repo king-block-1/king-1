@@ -168,8 +168,19 @@ export const theme = {
   },
   typography: {
     fonts: {
-      sans: 'Geist, sans-serif',
-      mono: 'Geist Mono, monospace',
+      sans: 'Outfit, system-ui, sans-serif',
+      mono: 'JetBrains Mono, monospace',
+    },
+    lineHeight: {
+      tight: '1',
+      snug: '1.25',
+      normal: '1.5',
+      relaxed: '1.75',
+    },
+    letterSpacing: {
+      tight: '-0.025em',
+      normal: '0em',
+      wide: '0.025em',
     },
     sizes: {
       xs: '0.75rem',
@@ -177,6 +188,17 @@ export const theme = {
       base: '1rem',
       lg: '1.125rem',
       xl: '1.25rem',
+      '2xl': '1.5rem',
+      '3xl': '1.875rem',
+      '4xl': '2.25rem',
+      '5xl': '3rem',
+      '6xl': '3.75rem',
+    },
+    weights: {
+      normal: '400',
+      medium: '500',
+      semibold: '600',
+      bold: '700',
     },
   },
 };

@@ -4,23 +4,101 @@
 
 ### 1.1 Typography
 1. **Font Families**
-   - Primary: Geist Sans
-   - Monospace: Geist Mono
-   - Fallback: System fonts
+   - Primary: Outfit (Google Fonts)
+   - Monospace: JetBrains Mono (Google Fonts)
+   - Fallback: system-ui, sans-serif
 
 2. **Type Scale**
-   - Display: 48px/60px
-   - H1: 36px/44px
-   - H2: 30px/38px
-   - H3: 24px/32px
-   - Body: 16px/24px
-   - Small: 14px/20px
+   - xs: 0.75rem/1rem (12px) - Auxiliary text
+   - sm: 0.875rem/1.25rem (14px) - Secondary text
+   - base: 1rem/1.5rem (16px) - Body text
+   - lg: 1.125rem/1.75rem (18px) - Large body text
+   - xl: 1.25rem/1.75rem (20px) - Small headings
+   - 2xl: 1.5rem/2rem (24px) - Section headings
+   - 3xl: 1.875rem/2.25rem (30px) - Major headings
+   - 4xl: 2.25rem/2.5rem (36px) - Display headings
+   - 5xl: 3rem/1 (48px) - Hero headings
+   - 6xl: 3.75rem/1 (60px) - Large hero headings
 
 3. **Font Weights**
-   - Regular: 400
-   - Medium: 500
-   - Semibold: 600
-   - Bold: 700
+   - Regular: 400 - Body text
+   - Medium: 500 - Emphasized text
+   - Semibold: 600 - Sub-headings
+   - Bold: 700 - Headings
+
+4. **Line Heights**
+   - Tight: 1 - Headings
+   - Snug: 1.25 - Compact text
+   - Normal: 1.5 - Body text
+   - Relaxed: 1.75 - Large text
+
+5. **Letter Spacing**
+   - Tight: -0.025em - Headings
+   - Normal: 0em - Body text
+   - Wide: 0.025em - All caps text
+
+6. **Implementation**
+```typescript
+// Font imports (layout.tsx)
+import { Outfit, JetBrains_Mono } from "next/font/google";
+
+const outfit = Outfit({
+  subsets: ["latin"],
+  variable: "--font-sans",
+});
+
+const jetbrainsMono = JetBrains_Mono({
+  subsets: ["latin"],
+  variable: "--font-mono",
+});
+
+// CSS Variables (globals.css)
+:root {
+  --font-sans: "";
+  --font-mono: "";
+  --line-height-tight: 1;
+  --line-height-snug: 1.25;
+  --line-height-normal: 1.5;
+  --line-height-relaxed: 1.75;
+  --tracking-tight: -0.025em;
+  --tracking-normal: 0em;
+  --tracking-wide: 0.025em;
+}
+
+// Tailwind Configuration
+fontFamily: {
+  sans: ["var(--font-sans)", "system-ui", "sans-serif"],
+  mono: ["var(--font-mono)", "monospace"],
+}
+```
+
+7. **Semantic HTML**
+```typescript
+// Base styles (globals.css)
+h1 {
+  @apply text-4xl font-bold md:text-5xl lg:text-6xl tracking-tight;
+}
+
+h2 {
+  @apply text-3xl font-bold md:text-4xl tracking-tight;
+}
+
+h3 {
+  @apply text-2xl font-semibold md:text-3xl tracking-tight;
+}
+
+h4 {
+  @apply text-xl font-semibold md:text-2xl;
+}
+
+p {
+  @apply text-base leading-relaxed;
+}
+
+small {
+  @apply text-sm leading-normal;
+}
+```
 
 ### 1.2 Color System
 1. **Primary Colors**

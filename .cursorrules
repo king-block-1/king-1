@@ -1,0 +1,5 @@
+# .cursorrules
+
+- "Adhere to the project context as described in `/docs/ai-guidelines/00-ai-development-guidelines.md` section '1. Project Context'."
+- "Follow the development standards outlined in `/docs/ai-guidelines/00-ai-development-guidelines.md` section '2. Development Standards' through '14. Internationalization'."
+- "When generating code, use the templates provided in `/docs/ai-guidelines/01-ai-interaction-templates.md`, especially for components (section '1.1 Component Template'), tests (section '3. Test Templates'), and state management (section '6. State Management Templates')."

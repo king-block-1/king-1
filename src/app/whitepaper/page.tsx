@@ -40,8 +40,8 @@ const WhitePaper = () => {
         <div className="mb-8">
           <h3 className="text-xl font-semibold mb-4">1.2 King Blockchain Vision: The Future of Creator-Fan Relationships</h3>
           <p className="mb-4">
-            <strong>King Blockchain</strong> eliminates the middleman. We're not building another platform – 
-            we're creating infrastructure that lets creators and fans interact directly through smart contracts. 
+            <strong>King Blockchain</strong> eliminates the middleman. We&apos;re not building another platform – 
+            we&apos;re creating infrastructure that lets creators and fans interact directly through smart contracts. 
             Our vision is simple:
           </p>
 
@@ -68,7 +68,7 @@ const WhitePaper = () => {
             </div>
           </div>
 
-          <p className="mb-4">This isn't just theory – it's live infrastructure ready for creators to deploy today:</p>
+          <p className="mb-4">This isn&apos;t just theory – it&apos;s live infrastructure ready for creators to deploy today:</p>
           <pre className="bg-gray-100 p-4 rounded-lg mb-6 overflow-x-auto">
             <code>{`// Example: Deploy your creator economy in 2 minutes
 contract CreatorToken {
@@ -88,7 +88,7 @@ contract CreatorToken {
         <div className="mb-8">
           <h3 className="text-xl font-semibold mb-4">1.3 King Blockchain Solution: True Digital Sovereignty</h3>
           <p className="mb-4">
-            Our dual-chain architecture combines Ethereum's security with Solana's speed, delivering:
+            Our dual-chain architecture combines Ethereum&apos;s security with Solana&apos;s speed, delivering:
           </p>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -280,7 +280,7 @@ contract CreatorToken {
           <h3 className="text-xl font-semibold mb-4">3.1 Dual-Chain Architecture: Ethereum and Solana Integration</h3>
           <p className="mb-4">
             King Blockchain leverages the strengths of two leading public blockchains: Ethereum and Solana. 
-            This dual-chain approach combines Ethereum's robust smart contract capabilities with Solana's 
+            This dual-chain approach combines Ethereum&apos;s robust smart contract capabilities with Solana&apos;s 
             high throughput and low transaction costs.
           </p>
 
@@ -435,7 +435,7 @@ contract CreatorToken {
         <div className="mb-8">
           <h3 className="text-xl font-semibold mb-4">3.3 Creator Token Implementation</h3>
           <p className="mb-4">
-            Creator Tokens are implemented as Solana SPL tokens, leveraging the chain's high performance 
+            Creator Tokens are implemented as Solana SPL tokens, leveraging the chain&apos;s high performance 
             and low transaction costs. Each token represents a digital patronage certificate, with 
             built-in features for community access and governance.
           </p>
@@ -469,7 +469,7 @@ contract CreatorToken {
               <li className="mb-1">Creator initiates token creation through web interface</li>
               <li className="mb-1">Smart contract generates SPL token with custom parameters</li>
               <li className="mb-1">Metadata and royalties are configured on-chain</li>
-              <li className="mb-1">Initial supply is minted to creator's wallet</li>
+              <li className="mb-1">Initial supply is minted to creator&apos;s wallet</li>
               <li className="mb-1">Trading can begin immediately</li>
             </ol>
           </div>
@@ -577,7 +577,7 @@ contract CreatorToken {
         <div className="mb-8">
           <h3 className="text-xl font-semibold mb-4">3.5 Scalability and Performance</h3>
           <p className="mb-4">
-            King Blockchain's architecture is designed for high scalability and optimal performance 
+            King Blockchain&apos;s architecture is designed for high scalability and optimal performance 
             across both Ethereum and Solana layers. Our multi-chain approach leverages the best 
             features of each network while implementing additional optimizations.
           </p>

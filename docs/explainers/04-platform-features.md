@@ -87,8 +87,8 @@ The platform works seamlessly with:
 
 ### External Services
 - Discord communities
+- Custom integrations with API
 - Content platforms
-- Social networks
 - Payment processors
 - Analytics tools
 

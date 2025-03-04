@@ -1716,392 +1716,9 @@ This comprehensive governance framework ensures that all stakeholders—from pla
 
 ## 3. Technical Architecture
 
-### 3.1 Technical Implementation
-
 The King Blockchain platform implements a revolutionary technical architecture that enables cross-chain token functionality without the risks of traditional bridge solutions, while supporting multiple revenue streams through specialized service frameworks. This section provides a detailed explanation of the key implementation components and processes, including the token architecture, revenue services, and cross-chain synchronization.
 
-#### 3.1.1 Mirror Token Creation and Synchronization
-
-The platform's technical foundation is built on the mirror token architecture, which maintains token sovereignty while enabling cross-chain functionality:
-
-```solidity
-// Simplified Ethereum Mirror Token Contract
-contract CreatorMirrorToken {
-    string public name;                   // "Mirror Creator Token"
-    string public symbol;                 // "mCREATOR"
-    uint8 public decimals = 18;           // Standard ERC20 decimals
-    uint256 private _totalSupply;         // Mirrors the Solana token supply
-    
-    // Oracle authority addresses that can update state
-    mapping(address => bool) public oracleAuthorities;
-    
-    // Token balances mapping
-    mapping(address => uint256) private _balances;
-    
-    // Events for synchronization
-    event SupplyUpdated(uint256 newSupply);
-    event BalanceUpdated(address account, uint256 newBalance);
-    
-    // Oracle-controlled function to update total supply
-    function updateTotalSupply(uint256 newSupply) external onlyOracle {
-        _totalSupply = newSupply;
-        emit SupplyUpdated(newSupply);
-    }
-    
-    // Oracle-controlled function to update individual balances
-    function updateBalance(address account, uint256 newBalance) external onlyOracle {
-        _balances[account] = newBalance;
-        emit BalanceUpdated(account, newBalance);
-    }
-    
-    // Modifier to restrict access to authorized oracles
-    modifier onlyOracle() {
-        require(oracleAuthorities[msg.sender], "Not authorized");
-        _;
-    }
-}
-```
-
-**Mirror Token Creation Process:**
-
-1. **Native Token Deployment**
-   - KINGBLOCK tokens are deployed on Ethereum as standard ERC-20 tokens
-   - Creator Tokens are deployed on Solana as SPL tokens
-   - Both are created with standard features for their respective blockchains
-
-2. **Mirror Token Deployment**
-   - For each Creator Token on Solana, a corresponding mCreator Token is deployed on Ethereum
-   - For the KINGBLOCK token on Ethereum, a corresponding mKINGBLOCK token is deployed on Solana
-   - Mirror tokens are configured with oracle-controlled state management
-
-3. **Oracle Authorization**
-   - A network of trusted oracle nodes (15+ independent validators) is authorized to update mirror token state
-   - Multi-signature controls govern oracle authority changes
-   - Oracle nodes are distributed across multiple providers and jurisdictions
-
-4. **Initial State Synchronization**
-   - Oracle network scans the native token state (balances, supply, metadata)
-   - Mirror tokens are initialized to match the native token state
-   - Consistency checks verify accurate synchronization
-
-#### 3.1.2 Token Lifecycle Management
-
-The mirror token architecture manages the entire token lifecycle through oracle-based synchronization:
-
-```typescript
-// Pseudocode for the token lifecycle management process
-async function handleTokenEvents(nativeChain, mirrorChain, tokenId) {
-  // 1. Monitor for token events on native chain
-  const events = await nativeChain.getEvents(tokenId, lastProcessedBlock);
-  
-  // 2. Process each event type
-  for (const event of events) {
-    switch (event.type) {
-      case 'Transfer':
-        // Update mirror token balances on mirror chain
-        await mirrorChain.updateBalance(event.to, await nativeChain.getBalance(event.to, tokenId));
-        await mirrorChain.updateBalance(event.from, await nativeChain.getBalance(event.from, tokenId));
-        break;
-        
-      case 'Mint':
-        // Update total supply and recipient balance on mirror chain
-        const newSupply = await nativeChain.getTotalSupply(tokenId);
-        await mirrorChain.updateTotalSupply(newSupply);
-        await mirrorChain.updateBalance(event.to, await nativeChain.getBalance(event.to, tokenId));
-        break;
-        
-      case 'Burn':
-        // Update total supply and sender balance on mirror chain
-        const updatedSupply = await nativeChain.getTotalSupply(tokenId);
-        await mirrorChain.updateTotalSupply(updatedSupply);
-        await mirrorChain.updateBalance(event.from, await nativeChain.getBalance(event.from, tokenId));
-        break;
-    }
-  }
-  
-  // 3. Update last processed block
-  return events.length > 0 ? events[events.length - 1].blockNumber : lastProcessedBlock;
-}
-```
-
-**Token Lifecycle Stages:**
-
-1. **Issuance**
-   - Creator initiates token creation on King Blockchain platform
-   - Native tokens are minted on their origin chain (Creator Tokens on Solana, KINGBLOCK on Ethereum)
-   - Oracle network detects issuance event
-   - Mirror tokens are automatically deployed on the opposite chain
-   - Initial supply and distribution are synchronized
-
-2. **Transfer and Trading**
-   - Users transfer native tokens directly on their origin chain
-   - Oracle network detects transfer events
-   - Mirror token balances are updated to reflect native token movements
-   - No assets move between chains, only state is synchronized
-
-3. **Tokenomics Events**
-   - Custom events like staking, tiered access changes, or governance votes occur on native chain
-   - Oracle network translates these events for the mirror chain
-   - Mirror tokens reflect the updated state and capabilities
-   - Economic alignment maintained without cross-chain asset transfers
-
-4. **Settlement**
-   - For users requiring direct settlement between chains, atomic swaps provide trustless exchange
-   - Native and mirror tokens are exchanged directly between users through hashed timelock contracts
-   - No intermediaries or custodial risks in the settlement process
-
-#### 3.1.3 Oracle Network Architecture
-
-The oracle network is the critical infrastructure that enables trustless state synchronization across chains:
-
-```typescript
-// Pseudocode for oracle network validation process
-async function validateAndSubmitUpdate(update) {
-  // 1. Oracle nodes independently fetch on-chain data
-  const validationNodes = getAuthorizedValidators();
-  const validations = [];
-  
-  // 2. Each node validates the update independently
-  for (const node of validationNodes) {
-    const nodeValidation = await node.validate(update);
-    validations.push(nodeValidation);
-  }
-  
-  // 3. Threshold signature validation
-  const validationThreshold = Math.ceil(validationNodes.length * 2/3);
-  const validSignatures = validations.filter(v => v.isValid).length;
-  
-  // 4. If threshold reached, submit update
-  if (validSignatures >= validationThreshold) {
-    // Prepare multi-signature transaction
-    const signatures = validations
-      .filter(v => v.isValid)
-      .map(v => v.signature);
-      
-    // Submit update to mirror chain
-    return submitMultiSigUpdate(update, signatures);
-  }
-  
-  // 5. If threshold not reached, log validation failure
-  return logValidationFailure(update, validations);
-}
-```
-
-**Oracle Network Components:**
-
-1. **Validator Nodes**
-   - 15+ independent oracle nodes from diverse providers
-   - Each node runs both Ethereum and Solana clients
-   - Nodes monitor both blockchains for relevant events
-   - Nodes validate state changes independently
-
-2. **Consensus Mechanism**
-   - Threshold signature scheme requires 2/3 of nodes to agree
-   - Node signatures are combined into a single transaction
-   - Multiple validation rounds ensure accuracy
-   - Slashing conditions penalize malicious validators
-
-3. **State Propagation**
-   - Validated state changes are submitted to mirror chains
-   - Gas/fee optimization batches updates when possible
-   - Error handling ensures state consistency
-   - Monitoring systems track propagation performance
-
-4. **Security Measures**
-   - Economic stake requirements for validators
-   - Regular rotation of validator sets
-   - Circuit breakers for anomalous state changes
-   - Cryptographic verification of all updates
-
-#### 3.1.4 Atomic Swap Functionality
-
-For users who need to directly exchange tokens between chains, atomic swaps provide a trustless settlement mechanism:
-
-```solidity
-// Simplified Ethereum Atomic Swap Contract
-contract AtomicSwap {
-    struct Swap {
-        bytes32 swapId;
-        bytes32 secretHash;
-        uint256 timelock;
-        address initiator;
-        address participant;
-        address tokenContract;
-        uint256 amount;
-        bool completed;
-        bool refunded;
-    }
-    
-    mapping(bytes32 => Swap) public swaps;
-    
-    // Initiator locks tokens with a hashed secret
-    function initiate(bytes32 swapId, bytes32 secretHash, address participant, 
-                     address tokenContract, uint256 amount, uint256 timelock) external {
-        // Verify swap doesn't exist yet
-        require(swaps[swapId].initiator == address(0), "Swap exists");
-        
-        // Transfer tokens to this contract
-        IERC20(tokenContract).transferFrom(msg.sender, address(this), amount);
-        
-        // Create swap
-        swaps[swapId] = Swap({
-            swapId: swapId,
-            secretHash: secretHash,
-            timelock: timelock,
-            initiator: msg.sender,
-            participant: participant,
-            tokenContract: tokenContract,
-            amount: amount,
-            completed: false,
-            refunded: false
-        });
-    }
-    
-    // Participant claims using the revealed secret
-    function claim(bytes32 swapId, bytes32 secret) external {
-        Swap storage swap = swaps[swapId];
-        
-        // Verify swap exists and can be claimed
-        require(swap.participant == msg.sender, "Not participant");
-        require(!swap.completed && !swap.refunded, "Already completed/refunded");
-        require(block.timestamp < swap.timelock, "Timelock expired");
-        require(keccak256(abi.encodePacked(secret)) == swap.secretHash, "Invalid secret");
-        
-        // Mark as completed
-        swap.completed = true;
-        
-        // Transfer tokens to participant
-        IERC20(swap.tokenContract).transfer(swap.participant, swap.amount);
-    }
-    
-    // Refund after timelock expiration
-    function refund(bytes32 swapId) external {
-        Swap storage swap = swaps[swapId];
-        
-        // Verify swap exists and can be refunded
-        require(swap.initiator == msg.sender, "Not initiator");
-        require(!swap.completed && !swap.refunded, "Already completed/refunded");
-        require(block.timestamp >= swap.timelock, "Timelock not expired");
-        
-        // Mark as refunded
-        swap.refunded = true;
-        
-        // Return tokens to initiator
-        IERC20(swap.tokenContract).transfer(swap.initiator, swap.amount);
-    }
-}
-```
-
-**Atomic Swap Process:**
-
-1. **Marketplace Matching**
-   - Users looking to exchange tokens (e.g., KINGBLOCK for mKINGBLOCK) are matched
-   - Transaction parameters are agreed upon (amounts, timelock duration)
-   - A unique swap ID is generated for the transaction
-
-2. **Initiator Lock**
-   - The initiator generates a secret and its hash
-   - Initiator locks their tokens in the atomic swap contract on their chain
-   - The contract stores the secret hash, participant address, and timelock
-
-3. **Participant Lock**
-   - Participant verifies the initiator's lock transaction
-   - Participant locks their tokens in the atomic swap contract on their chain
-   - The same secret hash and swap parameters are used
-
-4. **Secret Revelation**
-   - Initiator reveals the secret to claim participant's tokens
-   - The revealed secret proves the initiator's commitment
-
-5. **Participant Claim**
-   - Participant uses the revealed secret to claim initiator's tokens
-   - The secret verifies that the participant is entitled to the funds
-
-6. **Fallback Protection**
-   - If either party fails to complete their actions, timelock expirations ensure funds return to original owners
-   - This eliminates counterparty risk without requiring trust
-
-The atomic swap marketplace provides a user-friendly interface that abstracts this complex process, making cross-chain swaps accessible to users without technical expertise.
-
-#### 3.1.5 End-to-End Implementation Example
-
-The following example illustrates the complete flow from creator token issuance to cross-chain functionality:
-
-```typescript
-// Creator token issuance and cross-chain flow example
-async function issueCreatorToken(creator, tokenParams) {
-  // 1. Deploy native Creator Token on Solana
-  const creatorToken = await solana.deployToken({
-    name: tokenParams.name,
-    symbol: tokenParams.symbol,
-    decimals: 9,  // Solana standard
-    initialSupply: tokenParams.initialSupply,
-    mintAuthority: creator.publicKey
-  });
-  
-  // 2. Register token in platform registry
-  await platform.registerCreatorToken(creatorToken.address, creator.publicKey);
-  
-  // 3. Oracle network detects new token issuance
-  const oracleNetwork = getOracleNetwork();
-  await oracleNetwork.trackToken(creatorToken.address, "solana");
-  
-  // 4. Deploy mirror token on Ethereum
-  const mirrorToken = await ethereum.deployMirrorToken({
-    name: `Mirror ${tokenParams.name}`,
-    symbol: `m${tokenParams.symbol}`,
-    decimals: 18,  // Ethereum standard
-    oracleAuthorities: oracleNetwork.getValidatorAddresses()
-  });
-  
-  // 5. Link tokens in platform registry
-  await platform.linkTokenPair(creatorToken.address, mirrorToken.address);
-  
-  // 6. Initial state synchronization
-  const initialState = await solana.getTokenState(creatorToken.address);
-  await oracleNetwork.synchronizeInitialState(initialState, mirrorToken.address);
-  
-  // 7. Begin continuous monitoring and synchronization
-  await oracleNetwork.beginContinuousSync(creatorToken.address, mirrorToken.address);
-  
-  // 8. Return the token pair information
-  return {
-    nativeToken: creatorToken,
-    mirrorToken: mirrorToken,
-    registryEntry: await platform.getTokenPair(creatorToken.address)
-  };
-}
-```
-
-This implementation demonstrates how the platform enables:
-
-1. **Simplified Creator Experience**
-   - Creators deploy tokens once, gaining cross-chain presence automatically
-   - No technical knowledge of cross-chain mechanics required
-   - Complete token customization without blockchain complexity
-
-2. **Seamless Fan Experience**
-   - Fans interact with tokens on their preferred blockchain
-   - Same token holdings provide identical benefits regardless of chain
-   - No need to understand the underlying synchronization mechanisms
-
-3. **Reliable Cross-Chain Functionality**
-   - Oracle network ensures consistent token state across chains
-   - Atomic swaps provide trustless settlement when needed
-   - Security guaranteed by chain-specific native protection
-
-4. **Scalable Architecture**
-   - Each component (tokens, oracles, swaps) can scale independently
-   - Oracle validation is computationally efficient
-   - Batch processing optimizes gas/fee costs
-
-This technical implementation provides the foundation for the entire King Blockchain ecosystem, enabling true digital sovereignty for creators and fans through a secure, efficient cross-chain architecture that eliminates traditional bridge risks.
-
-### 3.2 Platform Architecture
-
-King Blockchain's platform architecture represents a comprehensive end-to-end system designed to support creator economies across blockchain ecosystems. This architecture integrates multiple layers and components to deliver a secure, scalable, and user-friendly experience for creators and fans.
-
-#### 3.2.1 Architecture Overview
+### 3.1  Architecture Overview
 
 The platform follows a modular, service-oriented architecture that spans multiple technology layers:
 
@@ -2115,7 +1732,7 @@ The platform follows a modular, service-oriented architecture that spans multipl
 
 This architecture enables end-to-end capabilities from user interaction to blockchain settlement while maintaining the highest standards of security, performance, and decentralization.
 
-#### 3.2.2 Core Components and Interactions
+### 3.2 Core Components and Interactions
 
 The platform consists of several integrated components that work together to enable the creator economy ecosystem:
 
@@ -2284,7 +1901,7 @@ The infrastructure layer provides the foundation for the entire platform:
 - **Revenue Analytics**: Real-time tracking and analysis of platform revenue streams
 - **Fee Processing System**: Automated collection and distribution of fees from multiple sources
 
-#### 3.2.3 Key Platform Layers
+### 3.3 Key Platform Layers
 
 Each platform layer fulfills specific roles in the overall architecture:
 
@@ -2358,7 +1975,384 @@ The infrastructure layer provides the foundation for all platform operations wit
 
 This layer supports both centralized and decentralized components, with appropriate security and reliability measures for each.
 
-#### 3.2.4 Cross-Chain Architecture
+#### 3.3.1 Mirror Token Creation and Synchronization
+
+The platform's technical foundation is built on the mirror token architecture, which maintains token sovereignty while enabling cross-chain functionality:
+
+```solidity
+// Simplified Ethereum Mirror Token Contract
+contract CreatorMirrorToken {
+    string public name;                   // "Mirror Creator Token"
+    string public symbol;                 // "mCREATOR"
+    uint8 public decimals = 18;           // Standard ERC20 decimals
+    uint256 private _totalSupply;         // Mirrors the Solana token supply
+    
+    // Oracle authority addresses that can update state
+    mapping(address => bool) public oracleAuthorities;
+    
+    // Token balances mapping
+    mapping(address => uint256) private _balances;
+    
+    // Events for synchronization
+    event SupplyUpdated(uint256 newSupply);
+    event BalanceUpdated(address account, uint256 newBalance);
+    
+    // Oracle-controlled function to update total supply
+    function updateTotalSupply(uint256 newSupply) external onlyOracle {
+        _totalSupply = newSupply;
+        emit SupplyUpdated(newSupply);
+    }
+    
+    // Oracle-controlled function to update individual balances
+    function updateBalance(address account, uint256 newBalance) external onlyOracle {
+        _balances[account] = newBalance;
+        emit BalanceUpdated(account, newBalance);
+    }
+    
+    // Modifier to restrict access to authorized oracles
+    modifier onlyOracle() {
+        require(oracleAuthorities[msg.sender], "Not authorized");
+        _;
+    }
+}
+```
+
+**Mirror Token Creation Process:**
+
+1. **Native Token Deployment**
+   - KINGBLOCK tokens are deployed on Ethereum as standard ERC-20 tokens
+   - Creator Tokens are deployed on Solana as SPL tokens
+   - Both are created with standard features for their respective blockchains
+
+2. **Mirror Token Deployment**
+   - For each Creator Token on Solana, a corresponding mCreator Token is deployed on Ethereum
+   - For the KINGBLOCK token on Ethereum, a corresponding mKINGBLOCK token is deployed on Solana
+   - Mirror tokens are configured with oracle-controlled state management
+
+3. **Oracle Authorization**
+   - A network of trusted oracle nodes (15+ independent validators) is authorized to update mirror token state
+   - Multi-signature controls govern oracle authority changes
+   - Oracle nodes are distributed across multiple providers and jurisdictions
+
+4. **Initial State Synchronization**
+   - Oracle network scans the native token state (balances, supply, metadata)
+   - Mirror tokens are initialized to match the native token state
+   - Consistency checks verify accurate synchronization
+
+#### 3.3.2 Token Lifecycle Management
+
+The mirror token architecture manages the entire token lifecycle through oracle-based synchronization:
+
+```typescript
+// Pseudocode for the token lifecycle management process
+async function handleTokenEvents(nativeChain, mirrorChain, tokenId) {
+  // 1. Monitor for token events on native chain
+  const events = await nativeChain.getEvents(tokenId, lastProcessedBlock);
+  
+  // 2. Process each event type
+  for (const event of events) {
+    switch (event.type) {
+      case 'Transfer':
+        // Update mirror token balances on mirror chain
+        await mirrorChain.updateBalance(event.to, await nativeChain.getBalance(event.to, tokenId));
+        await mirrorChain.updateBalance(event.from, await nativeChain.getBalance(event.from, tokenId));
+        break;
+        
+      case 'Mint':
+        // Update total supply and recipient balance on mirror chain
+        const newSupply = await nativeChain.getTotalSupply(tokenId);
+        await mirrorChain.updateTotalSupply(newSupply);
+        await mirrorChain.updateBalance(event.to, await nativeChain.getBalance(event.to, tokenId));
+        break;
+        
+      case 'Burn':
+        // Update total supply and sender balance on mirror chain
+        const updatedSupply = await nativeChain.getTotalSupply(tokenId);
+        await mirrorChain.updateTotalSupply(updatedSupply);
+        await mirrorChain.updateBalance(event.from, await nativeChain.getBalance(event.from, tokenId));
+        break;
+    }
+  }
+  
+  // 3. Update last processed block
+  return events.length > 0 ? events[events.length - 1].blockNumber : lastProcessedBlock;
+}
+```
+
+**Token Lifecycle Stages:**
+
+1. **Issuance**
+   - Creator initiates token creation on King Blockchain platform
+   - Native tokens are minted on their origin chain (Creator Tokens on Solana, KINGBLOCK on Ethereum)
+   - Oracle network detects issuance event
+   - Mirror tokens are automatically deployed on the opposite chain
+   - Initial supply and distribution are synchronized
+
+2. **Transfer and Trading**
+   - Users transfer native tokens directly on their origin chain
+   - Oracle network detects transfer events
+   - Mirror token balances are updated to reflect native token movements
+   - No assets move between chains, only state is synchronized
+
+3. **Tokenomics Events**
+   - Custom events like staking, tiered access changes, or governance votes occur on native chain
+   - Oracle network translates these events for the mirror chain
+   - Mirror tokens reflect the updated state and capabilities
+   - Economic alignment maintained without cross-chain asset transfers
+
+4. **Settlement**
+   - For users requiring direct settlement between chains, atomic swaps provide trustless exchange
+   - Native and mirror tokens are exchanged directly between users through hashed timelock contracts
+   - No intermediaries or custodial risks in the settlement process
+
+#### 3.3.3 Oracle Network Architecture
+
+The oracle network is the critical infrastructure that enables trustless state synchronization across chains:
+
+```typescript
+// Pseudocode for oracle network validation process
+async function validateAndSubmitUpdate(update) {
+  // 1. Oracle nodes independently fetch on-chain data
+  const validationNodes = getAuthorizedValidators();
+  const validations = [];
+  
+  // 2. Each node validates the update independently
+  for (const node of validationNodes) {
+    const nodeValidation = await node.validate(update);
+    validations.push(nodeValidation);
+  }
+  
+  // 3. Threshold signature validation
+  const validationThreshold = Math.ceil(validationNodes.length * 2/3);
+  const validSignatures = validations.filter(v => v.isValid).length;
+  
+  // 4. If threshold reached, submit update
+  if (validSignatures >= validationThreshold) {
+    // Prepare multi-signature transaction
+    const signatures = validations
+      .filter(v => v.isValid)
+      .map(v => v.signature);
+      
+    // Submit update to mirror chain
+    return submitMultiSigUpdate(update, signatures);
+  }
+  
+  // 5. If threshold not reached, log validation failure
+  return logValidationFailure(update, validations);
+}
+```
+
+**Oracle Network Components:**
+
+1. **Validator Nodes**
+   - 15+ independent oracle nodes from diverse providers
+   - Each node runs both Ethereum and Solana clients
+   - Nodes monitor both blockchains for relevant events
+   - Nodes validate state changes independently
+
+2. **Consensus Mechanism**
+   - Threshold signature scheme requires 2/3 of nodes to agree
+   - Node signatures are combined into a single transaction
+   - Multiple validation rounds ensure accuracy
+   - Slashing conditions penalize malicious validators
+
+3. **State Propagation**
+   - Validated state changes are submitted to mirror chains
+   - Gas/fee optimization batches updates when possible
+   - Error handling ensures state consistency
+   - Monitoring systems track propagation performance
+
+4. **Security Measures**
+   - Economic stake requirements for validators
+   - Regular rotation of validator sets
+   - Circuit breakers for anomalous state changes
+   - Cryptographic verification of all updates
+
+#### 3.3.4 Atomic Swap Functionality
+
+For users who need to directly exchange tokens between chains, atomic swaps provide a trustless settlement mechanism:
+
+```solidity
+// Simplified Ethereum Atomic Swap Contract
+contract AtomicSwap {
+    struct Swap {
+        bytes32 swapId;
+        bytes32 secretHash;
+        uint256 timelock;
+        address initiator;
+        address participant;
+        address tokenContract;
+        uint256 amount;
+        bool completed;
+        bool refunded;
+    }
+    
+    mapping(bytes32 => Swap) public swaps;
+    
+    // Initiator locks tokens with a hashed secret
+    function initiate(bytes32 swapId, bytes32 secretHash, address participant, 
+                     address tokenContract, uint256 amount, uint256 timelock) external {
+        // Verify swap doesn't exist yet
+        require(swaps[swapId].initiator == address(0), "Swap exists");
+        
+        // Transfer tokens to this contract
+        IERC20(tokenContract).transferFrom(msg.sender, address(this), amount);
+        
+        // Create swap
+        swaps[swapId] = Swap({
+            swapId: swapId,
+            secretHash: secretHash,
+            timelock: timelock,
+            initiator: msg.sender,
+            participant: participant,
+            tokenContract: tokenContract,
+            amount: amount,
+            completed: false,
+            refunded: false
+        });
+    }
+    
+    // Participant claims using the revealed secret
+    function claim(bytes32 swapId, bytes32 secret) external {
+        Swap storage swap = swaps[swapId];
+        
+        // Verify swap exists and can be claimed
+        require(swap.participant == msg.sender, "Not participant");
+        require(!swap.completed && !swap.refunded, "Already completed/refunded");
+        require(block.timestamp < swap.timelock, "Timelock expired");
+        require(keccak256(abi.encodePacked(secret)) == swap.secretHash, "Invalid secret");
+        
+        // Mark as completed
+        swap.completed = true;
+        
+        // Transfer tokens to participant
+        IERC20(swap.tokenContract).transfer(swap.participant, swap.amount);
+    }
+    
+    // Refund after timelock expiration
+    function refund(bytes32 swapId) external {
+        Swap storage swap = swaps[swapId];
+        
+        // Verify swap exists and can be refunded
+        require(swap.initiator == msg.sender, "Not initiator");
+        require(!swap.completed && !swap.refunded, "Already completed/refunded");
+        require(block.timestamp >= swap.timelock, "Timelock not expired");
+        
+        // Mark as refunded
+        swap.refunded = true;
+        
+        // Return tokens to initiator
+        IERC20(swap.tokenContract).transfer(swap.initiator, swap.amount);
+    }
+}
+```
+
+**Atomic Swap Process:**
+
+1. **Marketplace Matching**
+   - Users looking to exchange tokens (e.g., KINGBLOCK for mKINGBLOCK) are matched
+   - Transaction parameters are agreed upon (amounts, timelock duration)
+   - A unique swap ID is generated for the transaction
+
+2. **Initiator Lock**
+   - The initiator generates a secret and its hash
+   - Initiator locks their tokens in the atomic swap contract on their chain
+   - The contract stores the secret hash, participant address, and timelock
+
+3. **Participant Lock**
+   - Participant verifies the initiator's lock transaction
+   - Participant locks their tokens in the atomic swap contract on their chain
+   - The same secret hash and swap parameters are used
+
+4. **Secret Revelation**
+   - Initiator reveals the secret to claim participant's tokens
+   - The revealed secret proves the initiator's commitment
+
+5. **Participant Claim**
+   - Participant uses the revealed secret to claim initiator's tokens
+   - The secret verifies that the participant is entitled to the funds
+
+6. **Fallback Protection**
+   - If either party fails to complete their actions, timelock expirations ensure funds return to original owners
+   - This eliminates counterparty risk without requiring trust
+
+The atomic swap marketplace provides a user-friendly interface that abstracts this complex process, making cross-chain swaps accessible to users without technical expertise.
+
+#### 3.3.5 Mirror Token End-to-End Implementation Example
+
+The following example illustrates the complete flow from creator token issuance to cross-chain functionality:
+
+```typescript
+// Creator token issuance and cross-chain flow example
+async function issueCreatorToken(creator, tokenParams) {
+  // 1. Deploy native Creator Token on Solana
+  const creatorToken = await solana.deployToken({
+    name: tokenParams.name,
+    symbol: tokenParams.symbol,
+    decimals: 9,  // Solana standard
+    initialSupply: tokenParams.initialSupply,
+    mintAuthority: creator.publicKey
+  });
+  
+  // 2. Register token in platform registry
+  await platform.registerCreatorToken(creatorToken.address, creator.publicKey);
+  
+  // 3. Oracle network detects new token issuance
+  const oracleNetwork = getOracleNetwork();
+  await oracleNetwork.trackToken(creatorToken.address, "solana");
+  
+  // 4. Deploy mirror token on Ethereum
+  const mirrorToken = await ethereum.deployMirrorToken({
+    name: `Mirror ${tokenParams.name}`,
+    symbol: `m${tokenParams.symbol}`,
+    decimals: 18,  // Ethereum standard
+    oracleAuthorities: oracleNetwork.getValidatorAddresses()
+  });
+  
+  // 5. Link tokens in platform registry
+  await platform.linkTokenPair(creatorToken.address, mirrorToken.address);
+  
+  // 6. Initial state synchronization
+  const initialState = await solana.getTokenState(creatorToken.address);
+  await oracleNetwork.synchronizeInitialState(initialState, mirrorToken.address);
+  
+  // 7. Begin continuous monitoring and synchronization
+  await oracleNetwork.beginContinuousSync(creatorToken.address, mirrorToken.address);
+  
+  // 8. Return the token pair information
+  return {
+    nativeToken: creatorToken,
+    mirrorToken: mirrorToken,
+    registryEntry: await platform.getTokenPair(creatorToken.address)
+  };
+}
+```
+
+This implementation demonstrates how the platform enables:
+
+1. **Simplified Creator Experience**
+   - Creators deploy tokens once, gaining cross-chain presence automatically
+   - No technical knowledge of cross-chain mechanics required
+   - Complete token customization without blockchain complexity
+
+2. **Seamless Fan Experience**
+   - Fans interact with tokens on their preferred blockchain
+   - Same token holdings provide identical benefits regardless of chain
+   - No need to understand the underlying synchronization mechanisms
+
+3. **Reliable Cross-Chain Functionality**
+   - Oracle network ensures consistent token state across chains
+   - Atomic swaps provide trustless settlement when needed
+   - Security guaranteed by chain-specific native protection
+
+4. **Scalable Architecture**
+   - Each component (tokens, oracles, swaps) can scale independently
+   - Oracle validation is computationally efficient
+   - Batch processing optimizes gas/fee costs
+
+This technical implementation provides the foundation for the entire King Blockchain ecosystem, enabling true digital sovereignty for creators and fans through a secure, efficient cross-chain architecture that eliminates traditional bridge risks.
+
+### 3.4 Cross-Chain Architecture
 
 The cross-chain architecture is a critical element that enables the platform's multi-blockchain functionality:
 
@@ -2403,7 +2397,7 @@ Communication between chains occurs through two primary mechanisms:
 
 This dual-mechanism approach delivers cross-chain functionality without the security risks of traditional bridge solutions.
 
-#### 3.2.5 Deployment Architecture
+### 3.5 Deployment Architecture
 
 The platform deployment architecture balances decentralization and performance:
 
@@ -2457,7 +2451,7 @@ Certain components are deployed in a performance-optimized configuration:
 
 This hybrid approach delivers the security benefits of decentralization with the performance characteristics needed for a responsive user experience.
 
-#### 3.2.6 Security Architecture
+### 3.6 Security Architecture
 
 The platform implements a comprehensive security architecture with multiple layers of protection:
 
@@ -2492,7 +2486,7 @@ The platform implements a comprehensive security architecture with multiple laye
 
 The platform's security architecture is designed to protect all aspects of the ecosystem while maintaining the open, decentralized nature of the blockchain environment.
 
-#### 3.2.7 Integration Architecture
+### 3.7 Integration Architecture
 
 The platform provides extensive integration capabilities for third-party systems:
 
@@ -2539,7 +2533,7 @@ Developers can build on the platform through comprehensive toolkits:
 
 These integration capabilities ensure the platform can connect with the broader ecosystem while maintaining its security and performance characteristics.
 
-#### 3.2.8 Scalability Architecture
+### 3.8 Scalability Architecture
 
 The platform's scalability architecture ensures it can grow to support millions of users and billions in transaction volume:
 
@@ -2605,7 +2599,7 @@ The platform's scalability architecture ensures it can grow to support millions 
 
 This scalability architecture enables the platform to grow from supporting 2,000 creators and $2.4M in volume in Year 1 to 75,000 creators and $900M in volume by Year 5, all while maintaining performance and security.
 
-#### 3.2.9 Architecture Evolution
+### 3.9 Architecture Evolution
 
 The platform architecture is designed to evolve over time, with planned enhancements across multiple dimensions:
 
@@ -2629,11 +2623,11 @@ This evolution ensures the platform can adapt to changing market requirements wh
 
 The complete platform architecture provides a comprehensive foundation for the King Blockchain ecosystem, enabling true digital sovereignty for creators and fans through a secure, scalable, and extensible technical infrastructure.
 
-### 3.3 Creator Token Implementation
+### 3.4 Creator Token Implementation
 
 Creator Tokens form the core of the King Blockchain economy, enabling direct creator-fan relationships through programmable digital assets. This section provides a detailed exploration of how Creator Tokens are implemented, their features, economics, and applications.
 
-#### 3.3.1 Creator Token Features and Utility
+#### 3.4.1 Creator Token Features and Utility
 
 Creator Tokens are purpose-built digital assets designed specifically for creator economies, with a comprehensive feature set that extends far beyond simple cryptocurrencies:
 
@@ -2725,7 +2719,7 @@ Creator Tokens serve as verifiable proof of community membership and support:
 
 These utility functions make Creator Tokens powerful tools for building engaged, economically aligned communities across the digital landscape.
 
-#### 3.3.2 Creator Token Economics and Monetization
+#### 3.4.2 Creator Token Economics and Monetization
 
 The Creator Token economic model is designed to maximize value for both creators and fans while ensuring sustainable platform growth:
 
@@ -2860,7 +2854,7 @@ For a creator with the following metrics in their first year:
 
 This enhanced economic model creates strong alignment between creator success and community prosperity while providing diverse revenue streams that reduce dependency on any single platform or monetization method.
 
-#### 3.3.3 Token Tier Structures and Access Control
+#### 3.4.3 Token Tier Structures and Access Control
 
 Creator Tokens implement flexible tier structures that enable nuanced community membership and access control:
 
@@ -3079,11 +3073,11 @@ Across successful Creator Token implementations, several patterns emerge:
 
 These real-world applications demonstrate the versatility and effectiveness of the Creator Token model across diverse creator categories, audience sizes, and content types. The platform's mirror token architecture enables these implementations to function seamlessly across blockchain ecosystems, maximizing both utility and reach.
 
-### 3.4 Data Handling
+### 3.5 Data Handling
 
 The King Blockchain platform implements a sophisticated data handling architecture that balances on-chain permanence with off-chain flexibility, ensuring optimal performance, privacy, and sovereignty for all platform participants.
 
-#### 3.4.1 Data Management Framework
+#### 3.5.1 Data Management Framework
 
 The platform's data management framework follows a hybrid approach that strategically distributes different data types across on-chain and off-chain storage:
 
@@ -3128,7 +3122,7 @@ interface CreatorProfile {
 }
 ```
 
-#### 3.4.2 On-Chain vs Off-Chain Storage Strategies
+#### 3.5.2 On-Chain vs Off-Chain Storage Strategies
 
 The platform uses a sophisticated approach to determine optimal data storage locations:
 
@@ -3235,7 +3229,7 @@ The platform seamlessly integrates on-chain and off-chain data through:
 
 This hybrid approach ensures data integrity and availability while optimizing for cost, performance, and privacy.
 
-#### 3.4.3 Data Privacy and Sovereignty
+#### 3.5.3 Data Privacy and Sovereignty
 
 The platform implements a comprehensive data privacy and sovereignty framework aligned with global regulations and user expectations:
 

@@ -8,7 +8,6 @@ By eliminating intermediaries, King Blockchain delivers immediate technical adva
 
 Beyond technical superiority, King Blockchain establishes a self-sustaining economic model where value flows directly between creators and fans through user-governed marketplace mechanics. This reshapes the fundamental power dynamics of content creation, transitioning from platform monopolies to creator sovereignty. The result is not merely an incremental improvement but a comprehensive infrastructure layer for the next generation of digital creativity and ownership.
 
-
 ## Glossary of Terms
 
 **Anomaly Detection:** Identifying patterns that deviate from the norm, indicating unusual or suspicious activity.
@@ -153,7 +152,7 @@ King Blockchain addresses these fundamental challenges by enabling true digital 
 
 **King Blockchain** eliminates the middleman through a revolutionary architecture that enables direct creator-fan relationships. Rather than building another platform, we've created infrastructure that lets creators and fans interact directly through smart contracts on the most secure and efficient blockchains available.
 
-We're also different from other creator token systems. While platforms like XCAD focus on specific social media integrations (YouTube), Roll relies solely on Ethereum, and DeSo requires using their own social platform, King Blockchain provides true platform independence through a dual-chain architecture that works anywhere creators want to build their communities.
+We're also different from other creator token systems. While platforms like XCAD focus on specific social media integrations (YouTube), Roll relies solely on Ethereum, and DeSo requires using their own social platform, King Blockchain provides true platform independence through an architecture that works anywhere creators want to build their communities.
 
 Creators can immediately launch token-gated communities through Discord integration, while developers can build custom access control systems using our open APIs. This combination of ready-to-use tools and flexible infrastructure enables both immediate utility and long-term ecosystem growth.
 

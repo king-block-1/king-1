@@ -4075,7 +4075,7 @@ Based on SOL modeling research projecting Solana's price to reach approximately 
 4. **Community Building**: Strengthen creator-fan relationships
 5. **Risk Management**: Establish financial reserves
 
-King Blockchain also invests in creators, community projects, developer initiatives, and our Sol network investment initative, all budgeted from treasury funds.
+King Blockchain invests in creators, community projects, developer initiatives, and our Sol network growth initative, all budgeted from treasury funds.
 
 ### 4.4 Revenue Model & Treasury Management
 

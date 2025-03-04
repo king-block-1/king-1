@@ -15,7 +15,8 @@
 ### 2.3 Tokens vs. Social Signals
 ### 2.4 Platform Independence
 
-## 3. Blockchain Design
+## 3. Blockchain Technology
+### What is it and why
 ### 3.1 Core Infrastructure
 #### 3.1.1 Dual-Chain Architecture
 #### 3.1.2 Cross-Chain Integration
